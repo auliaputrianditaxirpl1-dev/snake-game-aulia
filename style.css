@@ -1,31 +1,121 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
-    background: rgb(35, 30, 45);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #231e2d;
     color: white;
     font-family: Arial, sans-serif;
+}
+
+.game {
+    width: 100%;
+    max-width: 430px;
+    padding: 15px;
     text-align: center;
 }
 
 h1 {
-    margin: 15px;
+    color: #ffb4c8;
+    margin: 5px 0 15px;
 }
 
-.skor {
-    font-size: 24px;
-    margin-bottom: 10px;
+.info {
+    display: flex;
+    justify-content: space-between;
+    background: #302a3d;
+    padding: 12px 18px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.info b {
+    color: #ffb4c8;
+}
+
+.board {
+    position: relative;
+    width: 100%;
 }
 
 canvas {
+    width: 100%;
+    height: auto;
     display: block;
-    margin: auto;
-    border: 3px solid rgb(55, 50, 65);
+    background: #231e2d;
+    border: 3px solid #50465d;
+    border-radius: 12px;
 }
 
-p {
-    font-size: 18px;
-}
-
-#pesan {
-    color: rgb(255, 180, 200);
+button {
+    border: none;
+    border-radius: 12px;
+    background: #302a3d;
+    color: white;
+    font-size: 22px;
     font-weight: bold;
+    cursor: pointer;
+}
+
+button:active {
+    background: #d9829a;
+    transform: scale(0.92);
+}
+
+#startScreen,
+#gameOver {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    padding: 25px;
+    background: rgba(35, 30, 45, 0.95);
+    border-radius: 15px;
+}
+
+#startScreen button,
+#gameOver button {
+    padding: 12px 25px;
+    background: #d9829a;
+    font-size: 16px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.controls {
+    margin-top: 15px;
+}
+
+.controls button {
+    width: 55px;
+    height: 55px;
+    margin: 3px;
+}
+
+.text {
+    font-size: 12px;
+    color: #aaa;
+}
+
+@media (max-width: 450px) {
+    body {
+        align-items: flex-start;
+        padding-top: 15px;
+    }
+
+    .game {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
 }
