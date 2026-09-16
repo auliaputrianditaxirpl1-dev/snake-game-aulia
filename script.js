@@ -1,261 +1,245 @@
-javascript
-const canvas = document.getElementById("game");
+const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-const GRID = 20;
-const WIDTH = 800;
-const HEIGHT = 600;
+const grid = 20;
+const size = 400;
 
-let ular = [];
-let makanan = [];
-let arah = { x: 20, y: 0 };
-let skor = 0;
-let warnaUlar = "rgb(50, 200, 80)";
-let gameOver = false;
+let snake = [];
+let food = {};
+let direction = "right";
+let nextDirection = "right";
+let score = 0;
+let gameRunning = false;
+let gameLoop = null;
 
-function posisiMakanan() {
-    return {
-        x: Math.floor(Math.random() * 40) * GRID,
-        y: Math.floor(Math.random() * 30) * GRID
-    };
-}
+let highScore = localStorage.getItem("highScore") || 0;
+document.getElementById("highScore").textContent = highScore;
 
-function resetGame() {
-    ular = [
-        { x: 400, y: 300 },
-        { x: 380, y: 300 },
-        { x: 360, y: 300 }
-    ];
+document.getElementById("startButton").addEventListener("click", startGame);
+document.getElementById("restartButton").addEventListener("click", startGame);
 
-    makanan = [];
-
-    for (let i = 0; i < 10; i++) {
-        makanan.push(posisiMakanan());
-    }
-
-    arah = { x: 20, y: 0 };
-    skor = 0;
-    warnaUlar = "rgb(50, 200, 80)";
-    gameOver = false;
-
-    document.getElementById("score").textContent = skor;
-    document.getElementById("pesan").textContent = "";
-}
-
-document.addEventListener("keydown", function(event) {
-
-    const key = event.key.toLowerCase();
-
-    if (gameOver && key === "r") {
-        resetGame();
-        return;
-    }
-
-    if (key === "arrowup" || key === "w") {
-        if (arah.y !== 20) {
-            arah = { x: 0, y: -20 };
-        }
-    }
-
-    if (key === "arrowdown" || key === "s") {
-        if (arah.y !== -20) {
-            arah = { x: 0, y: 20 };
-        }
-    }
-
-    if (key === "arrowleft" || key === "a") {
-        if (arah.x !== 20) {
-            arah = { x: -20, y: 0 };
-        }
-    }
-
-    if (key === "arrowright" || key === "d") {
-        if (arah.x !== -20) {
-            arah = { x: 20, y: 0 };
-        }
-    }
+document.querySelectorAll("[data-direction]").forEach(button => {
+    button.addEventListener("click", () => {
+        changeDirection(button.dataset.direction);
+    });
 });
 
+function startGame() {
+    snake = [
+        { x: 200, y: 200 },
+        { x: 180, y: 200 },
+        { x: 160, y: 200 }
+    ];
+
+    direction = "right";
+    nextDirection = "right";
+    score = 0;
+    gameRunning = true;
+
+    document.getElementById("score").textContent = score;
+    document.getElementById("startScreen").classList.add("hidden");
+    document.getElementById("gameOver").classList.add("hidden");
+
+    createFood();
+
+    clearInterval(gameLoop);
+    gameLoop = setInterval(update, 120);
+
+    draw();
+}
+
+function createFood() {
+    food = {
+        x: Math.floor(Math.random() * 20) * grid,
+        y: Math.floor(Math.random() * 20) * grid
+    };
+}
+
 function update() {
+    direction = nextDirection;
 
-    if (gameOver) {
-        return;
-    }
-
-    let kepala = {
-        x: ular[0].x + arah.x,
-        y: ular[0].y + arah.y
+    const head = {
+        x: snake[0].x,
+        y: snake[0].y
     };
 
-    // Tabrakan dinding
+    if (direction === "up") head.y -= grid;
+    if (direction === "down") head.y += grid;
+    if (direction === "left") head.x -= grid;
+    if (direction === "right") head.x += grid;
+
     if (
-        kepala.x < 0 ||
-        kepala.x >= WIDTH ||
-        kepala.y < 0 ||
-        kepala.y >= HEIGHT
+        head.x < 0 ||
+        head.x >= size ||
+        head.y < 0 ||
+        head.y >= size
     ) {
-        gameOver = true;
+        gameOver();
         return;
     }
 
-    // Tambahkan kepala
-    ular.unshift(kepala);
-
-    let makan = false;
-
-    // Cek makanan
-    for (let i = 0; i < makanan.length; i++) {
-
+    for (let i = 0; i < snake.length; i++) {
         if (
-            kepala.x === makanan[i].x &&
-            kepala.y === makanan[i].y
+            head.x === snake[i].x &&
+            head.y === snake[i].y
         ) {
-            skor++;
-            makan = true;
-
-            warnaUlar = `rgb(
-                ${Math.floor(Math.random() * 206) + 50},
-                ${Math.floor(Math.random() * 206) + 50},
-                ${Math.floor(Math.random() * 206) + 50}
-            )`;
-
-            makanan[i] = posisiMakanan();
-            break;
-        }
-    }
-
-    // Kalau tidak makan, ekor dihapus
-    if (!makan) {
-        ular.pop();
-    }
-
-    // Tabrakan dengan tubuh
-    for (let i = 1; i < ular.length; i++) {
-
-        if (
-            kepala.x === ular[i].x &&
-            kepala.y === ular[i].y
-        ) {
-            gameOver = true;
+            gameOver();
             return;
         }
     }
 
-    document.getElementById("score").textContent = skor;
+    snake.unshift(head);
+
+    if (head.x === food.x && head.y === food.y) {
+        score++;
+
+        document.getElementById("score").textContent = score;
+
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem("highScore", highScore);
+            document.getElementById("highScore").textContent = highScore;
+        }
+
+        createFood();
+
+        clearInterval(gameLoop);
+
+        const speed = Math.max(50, 120 - score * 3);
+        gameLoop = setInterval(update, speed);
+    } else {
+        snake.pop();
+    }
+
+    draw();
 }
 
-function gambar() {
+function draw() {
+    ctx.fillStyle = "#231e2d";
+    ctx.fillRect(0, 0, size, size);
 
-    // Background
-    ctx.fillStyle = "rgb(35, 30, 45)";
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    drawGrid();
+    drawFood();
+    drawSnake();
+}
 
-    // Grid
-    ctx.strokeStyle = "rgb(55, 50, 65)";
+function drawGrid() {
+    ctx.strokeStyle = "#373143";
 
-    for (let x = 0; x < WIDTH; x += GRID) {
+    for (let x = 0; x < size; x += grid) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
-        ctx.lineTo(x, HEIGHT);
+        ctx.lineTo(x, size);
         ctx.stroke();
     }
 
-    for (let y = 0; y < HEIGHT; y += GRID) {
+    for (let y = 0; y < size; y += grid) {
         ctx.beginPath();
         ctx.moveTo(0, y);
-        ctx.lineTo(WIDTH, y);
+        ctx.lineTo(size, y);
         ctx.stroke();
     }
+}
 
-    // Makanan
-    ctx.fillStyle = "rgb(220, 50, 50)";
+function drawFood() {
+    ctx.fillStyle = "#e0525d";
 
-    for (let item of makanan) {
-        ctx.beginPath();
-
-        ctx.arc(
-            item.x + 10,
-            item.y + 10,
-            10,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
-    }
-
-    // Ular
-    ctx.fillStyle = warnaUlar;
-
-    for (let bagian of ular) {
-        ctx.fillRect(
-            bagian.x,
-            bagian.y,
-            GRID,
-            GRID
-        );
-    }
-
-    // Rambut ular
-    const kepala = ular[0];
-
-    ctx.fillStyle = "rgb(255, 180, 200)";
     ctx.beginPath();
-
-    if (arah.x > 0) {
-        ctx.moveTo(kepala.x + 3, kepala.y);
-        ctx.lineTo(kepala.x + 8, kepala.y - 7);
-        ctx.lineTo(kepala.x + 12, kepala.y);
-        ctx.lineTo(kepala.x + 16, kepala.y - 7);
-        ctx.lineTo(kepala.x + 20, kepala.y);
-    } 
-    else if (arah.x < 0) {
-        ctx.moveTo(kepala.x, kepala.y);
-        ctx.lineTo(kepala.x + 4, kepala.y - 7);
-        ctx.lineTo(kepala.x + 8, kepala.y);
-        ctx.lineTo(kepala.x + 13, kepala.y - 7);
-        ctx.lineTo(kepala.x + 18, kepala.y);
-    }
-
-    ctx.fill();
-
-    // Game Over
-    if (gameOver) {
-
-        ctx.fillStyle = "rgb(220, 50, 50)";
-        ctx.font = "60px Arial";
-        ctx.textAlign = "center";
-
-        ctx.fillText(
-            "GAME OVER",
-            WIDTH / 2,
-            HEIGHT / 2
-        );
-
-        ctx.fillStyle = "white";
-        ctx.font = "30px Arial";
-
-        ctx.fillText(
-            "Tekan R untuk bermain lagi",
-            WIDTH / 2,
-            HEIGHT / 2 + 50
-        );
-    }
-}
-
-function gameLoop() {
-
-    update();
-    gambar();
-
-    let kecepatan = Math.max(
-        50,
-        100 - Math.floor(skor / 3) * 10
+    ctx.arc(
+        food.x + 10,
+        food.y + 10,
+        8,
+        0,
+        Math.PI * 2
     );
-
-    setTimeout(gameLoop, kecepatan);
+    ctx.fill();
 }
 
-resetGame();
-gambar();
-gameLoop();
+function drawSnake() {
+    for (let i = 0; i < snake.length; i++) {
+        ctx.fillStyle = i === 0 ? "#ff9fba" : "#4dcc72";
+
+        ctx.fillRect(
+            snake[i].x + 1,
+            snake[i].y + 1,
+            grid - 2,
+            grid - 2
+        );
+    }
+
+    drawEyes();
+}
+
+function drawEyes() {
+    const head = snake[0];
+
+    ctx.fillStyle = "white";
+
+    if (direction === "right") {
+        ctx.fillRect(head.x + 14, head.y + 4, 3, 3);
+        ctx.fillRect(head.x + 14, head.y + 13, 3, 3);
+    }
+
+    if (direction === "left") {
+        ctx.fillRect(head.x + 3, head.y + 4, 3, 3);
+        ctx.fillRect(head.x + 3, head.y + 13, 3, 3);
+    }
+
+    if (direction === "up") {
+        ctx.fillRect(head.x + 4, head.y + 3, 3, 3);
+        ctx.fillRect(head.x + 13, head.y + 3, 3, 3);
+    }
+
+    if (direction === "down") {
+        ctx.fillRect(head.x + 4, head.y + 14, 3, 3);
+        ctx.fillRect(head.x + 13, head.y + 14, 3, 3);
+    }
+}
+
+function changeDirection(newDirection) {
+    if (!gameRunning) return;
+
+    if (newDirection === "up" && direction !== "down") {
+        nextDirection = "up";
+    }
+
+    if (newDirection === "down" && direction !== "up") {
+        nextDirection = "down";
+    }
+
+    if (newDirection === "left" && direction !== "right") {
+        nextDirection = "left";
+    }
+
+    if (newDirection === "right" && direction !== "left") {
+        nextDirection = "right";
+    }
+}
+
+function gameOver() {
+    gameRunning = false;
+    clearInterval(gameLoop);
+
+    document.getElementById("finalScore").textContent = score;
+    document.getElementById("gameOver").classList.remove("hidden");
+}
+
+document.addEventListener("keydown", function(event) {
+    const key = event.key.toLowerCase();
+
+    if (key === "arrowup" || key === "w") {
+        changeDirection("up");
+    }
+
+    if (key === "arrowdown" || key === "s") {
+        changeDirection("down");
+    }
+
+    if (key === "arrowleft" || key === "a") {
+        changeDirection("left");
+    }
+
+    if (key === "arrowright" || key === "d") {
+        changeDirection("right");
+    }
+});
