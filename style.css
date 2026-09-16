@@ -23,7 +23,8 @@ h1 {
 }
 
 .info {
-    width: 400px;
+    width: 100%;
+    max-width: 500px; /* Ukuran maksimal di layar laptop (bisa diubah misal ke 600px jika ingin lebih lebar) */
     display: flex;
     justify-content: space-between;
     margin: 10px auto;
@@ -31,15 +32,17 @@ h1 {
 }
 
 .board {
-    width: 400px;
-    height: 400px;
+    width: 100%;
+    max-width: 500px; /* Samakan dengan maax-width .info */
+    aspect-ratio: 1 / 1; /* Menjaga bentuk board tetap kotak sempurna */
+    height: auto;
     position: relative;
     margin: auto;
 }
 
 canvas {
-    width: 400px;
-    height: 400px;
+    width: 100%;
+    height: 100%;
     display: block;
     background: #231e2d;
     border: 3px solid #555;
@@ -95,11 +98,11 @@ button:hover {
 @media (max-width: 500px) {
     .board,
     canvas,
-    .info {
-        width: 90vw;
-    }
+    .info,
 
-    .board,
+    .board {
+            width: 90vw; /* Mengikuti 90% lebar layar HP */
+    }
     canvas {
         height: 90vw;
         max-width: 400px;
