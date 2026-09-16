@@ -5,6 +5,36 @@ const grid = 20;
 const size = 400;
 const jumlahMakanan = 10;
 
+canvas.width = size;
+canvas.height = size;
+
+const emojiMakanan = [
+    "🍎",
+    "🍊",
+    "🍇",
+    "🍓",
+    "🍉",
+    "🍌",
+    "🍒",
+    "🥝",
+    "🍍",
+    "🥕"
+];
+
+const warnaUlar = [
+    "#4dcc72",
+    "#ff6b6b",
+    "#4dabf7",
+    "#ffd43b",
+    "#cc5de8",
+    "#ff922b",
+    "#20c997",
+    "#f06595"
+];
+
+const kecepatanAwal = 500;
+const kecepatanMinimum = 2;
+
 let snake = [];
 let foods = [];
 let direction = "right";
@@ -12,17 +42,19 @@ let nextDirection = "right";
 let score = 0;
 let gameRunning = false;
 let gameLoop = null;
+let warnaSekarang = warnaUlar[0];
 
-let highScore = localStorage.getItem("highScore") || 0;
+let highScore = Number(localStorage.getItem("highScore")) || 0;
+
 document.getElementById("highScore").textContent = highScore;
 
-document.getElementById("startButton").addEventListener("click", startGame);
-document.getElementById("restartButton").addEventListener("click", startGame);
+document.getElementById("startButton").onclick = startGame;
+document.getElementById("restartButton").onclick = startGame;
 
 document.querySelectorAll("[data-direction]").forEach(button => {
-    button.addEventListener("click", () => {
+    button.onclick = function() {
         changeDirection(button.dataset.direction);
-    });
+    };
 });
 
 function startGame() {
@@ -32,10 +64,12 @@ function startGame() {
         { x: 160, y: 200 }
     ];
 
+    foods = [];
     direction = "right";
     nextDirection = "right";
     score = 0;
     gameRunning = true;
+    warnaSekarang = warnaUlar[0];
 
     document.getElementById("score").textContent = score;
     document.getElementById("startScreen").classList.add("hidden");
@@ -44,7 +78,7 @@ function startGame() {
     createFoods();
 
     clearInterval(gameLoop);
-    gameLoop = setInterval(update, 120);
+    gameLoop = setInterval(update, kecepatanAwal);
 
     draw();
 }
@@ -54,19 +88,24 @@ function createFoods() {
 
     while (foods.length < jumlahMakanan) {
         const food = {
-            x: Math.floor(Math.random() * 20) * grid,
-            y: Math.floor(Math.random() * 20) * grid
+            x: Math.floor(Math.random() * (size / grid)) * grid,
+            y: Math.floor(Math.random() * (size / grid)) * grid,
+            emoji: emojiMakanan[
+                Math.floor(Math.random() * emojiMakanan.length)
+            ]
         };
 
-        const terkenaUlar = snake.some(segment =>
-            segment.x === food.x && segment.y === food.y
+        const kenaUlar = snake.some(segment =>
+            segment.x === food.x &&
+            segment.y === food.y
         );
 
-        const terkenaMakanan = foods.some(item =>
-            item.x === food.x && item.y === food.y
+        const kenaMakanan = foods.some(item =>
+            item.x === food.x &&
+            item.y === food.y
         );
 
-        if (!terkenaUlar && !terkenaMakanan) {
+        if (!kenaUlar && !kenaMakanan) {
             foods.push(food);
         }
     }
@@ -75,19 +114,24 @@ function createFoods() {
 function tambahMakanan() {
     while (foods.length < jumlahMakanan) {
         const food = {
-            x: Math.floor(Math.random() * 20) * grid,
-            y: Math.floor(Math.random() * 20) * grid
+            x: Math.floor(Math.random() * (size / grid)) * grid,
+            y: Math.floor(Math.random() * (size / grid)) * grid,
+            emoji: emojiMakanan[
+                Math.floor(Math.random() * emojiMakanan.length)
+            ]
         };
 
-        const terkenaUlar = snake.some(segment =>
-            segment.x === food.x && segment.y === food.y
+        const kenaUlar = snake.some(segment =>
+            segment.x === food.x &&
+            segment.y === food.y
         );
 
-        const terkenaMakanan = foods.some(item =>
-            item.x === food.x && item.y === food.y
+        const kenaMakanan = foods.some(item =>
+            item.x === food.x &&
+            item.y === food.y
         );
 
-        if (!terkenaUlar && !terkenaMakanan) {
+        if (!kenaUlar && !kenaMakanan) {
             foods.push(food);
         }
     }
@@ -101,10 +145,21 @@ function update() {
         y: snake[0].y
     };
 
-    if (direction === "up") head.y -= grid;
-    if (direction === "down") head.y += grid;
-    if (direction === "left") head.x -= grid;
-    if (direction === "right") head.x += grid;
+    if (direction === "up") {
+        head.y -= grid;
+    }
+
+    if (direction === "down") {
+        head.y += grid;
+    }
+
+    if (direction === "left") {
+        head.x -= grid;
+    }
+
+    if (direction === "right") {
+        head.x += grid;
+    }
 
     if (
         head.x < 0 ||
@@ -129,7 +184,8 @@ function update() {
     snake.unshift(head);
 
     const indexMakanan = foods.findIndex(food =>
-        head.x === food.x && head.y === food.y
+        head.x === food.x &&
+        head.y === food.y
     );
 
     if (indexMakanan !== -1) {
@@ -143,12 +199,20 @@ function update() {
             document.getElementById("highScore").textContent = highScore;
         }
 
+        warnaSekarang =
+            warnaUlar[(score - 1) % warnaUlar.length];
+
         foods.splice(indexMakanan, 1);
+
         tambahMakanan();
 
         clearInterval(gameLoop);
 
-        const speed = Math.max(50, 120 - score * 3);
+        const speed = Math.max(
+            kecepatanMinimum,
+            kecepatanAwal / Math.pow(2, score)
+        );
+
         gameLoop = setInterval(update, speed);
     } else {
         snake.pop();
@@ -186,31 +250,30 @@ function drawGrid() {
 
 function drawFoods() {
     foods.forEach(food => {
-        ctx.fillStyle = "#e0525d";
+        ctx.font = "18px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
 
-        ctx.beginPath();
-        ctx.arc(
+        ctx.fillText(
+            food.emoji,
             food.x + 10,
-            food.y + 10,
-            8,
-            0,
-            Math.PI * 2
+            food.y + 10
         );
-        ctx.fill();
     });
 }
 
 function drawSnake() {
-    for (let i = 0; i < snake.length; i++) {
-        ctx.fillStyle = i === 0 ? "#ff9fba" : "#4dcc72";
+    snake.forEach((segment, index) => {
+        ctx.fillStyle =
+            index === 0 ? "#ff9fba" : warnaSekarang;
 
         ctx.fillRect(
-            snake[i].x + 1,
-            snake[i].y + 1,
+            segment.x + 1,
+            segment.y + 1,
             grid - 2,
             grid - 2
         );
-    }
+    });
 
     drawEyes();
 }
@@ -242,27 +305,42 @@ function drawEyes() {
 }
 
 function changeDirection(newDirection) {
-    if (!gameRunning) return;
+    if (!gameRunning) {
+        return;
+    }
 
-    if (newDirection === "up" && direction !== "down") {
+    if (
+        newDirection === "up" &&
+        direction !== "down"
+    ) {
         nextDirection = "up";
     }
 
-    if (newDirection === "down" && direction !== "up") {
+    if (
+        newDirection === "down" &&
+        direction !== "up"
+    ) {
         nextDirection = "down";
     }
 
-    if (newDirection === "left" && direction !== "right") {
+    if (
+        newDirection === "left" &&
+        direction !== "right"
+    ) {
         nextDirection = "left";
     }
 
-    if (newDirection === "right" && direction !== "left") {
+    if (
+        newDirection === "right" &&
+        direction !== "left"
+    ) {
         nextDirection = "right";
     }
 }
 
 function gameOver() {
     gameRunning = false;
+
     clearInterval(gameLoop);
 
     document.getElementById("finalScore").textContent = score;
