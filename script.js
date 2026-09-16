@@ -33,7 +33,7 @@ const warnaUlar = [
 ];
 
 const kecepatanAwal = 500;
-const kecepatanMinimum = 2;
+const kecepatanMinimum = 200;
 
 let snake = [];
 let foods = [];
@@ -208,9 +208,11 @@ function update() {
 
         clearInterval(gameLoop);
 
+        const penguranganPer5makanan = 50; // Pengurangan interval (dalam milidetik) setiap 5 makanan
+        const level = Math.floor(score / 2);
         const speed = Math.max(
             kecepatanMinimum,
-            kecepatanAwal / Math.pow(2, score)
+            kecepatanAwal - level * penguranganPer5makanan
         );
 
         gameLoop = setInterval(update, speed);
@@ -264,15 +266,20 @@ function drawFoods() {
 
 function drawSnake() {
     snake.forEach((segment, index) => {
+        ctx.beginPath();
+
         ctx.fillStyle =
             index === 0 ? "#ff9fba" : warnaSekarang;
 
-        ctx.fillRect(
-            segment.x + 1,
-            segment.y + 1,
-            grid - 2,
-            grid - 2
+        ctx.arc(
+            segment.x + grid / 2,
+            segment.y + grid / 2,
+            grid / 2 - 1,
+            0,
+            Math.PI * 2
         );
+
+        ctx.fill();
     });
 
     drawEyes();
