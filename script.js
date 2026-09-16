@@ -3,9 +3,10 @@ const ctx = canvas.getContext("2d");
 
 const grid = 20;
 const size = 400;
+const jumlahMakanan = 10;
 
 let snake = [];
-let food = {};
+let foods = [];
 let direction = "right";
 let nextDirection = "right";
 let score = 0;
@@ -40,7 +41,7 @@ function startGame() {
     document.getElementById("startScreen").classList.add("hidden");
     document.getElementById("gameOver").classList.add("hidden");
 
-    createFood();
+    createFoods();
 
     clearInterval(gameLoop);
     gameLoop = setInterval(update, 120);
@@ -48,11 +49,48 @@ function startGame() {
     draw();
 }
 
-function createFood() {
-    food = {
-        x: Math.floor(Math.random() * 20) * grid,
-        y: Math.floor(Math.random() * 20) * grid
-    };
+function createFoods() {
+    foods = [];
+
+    while (foods.length < jumlahMakanan) {
+        const food = {
+            x: Math.floor(Math.random() * 20) * grid,
+            y: Math.floor(Math.random() * 20) * grid
+        };
+
+        const terkenaUlar = snake.some(segment =>
+            segment.x === food.x && segment.y === food.y
+        );
+
+        const terkenaMakanan = foods.some(item =>
+            item.x === food.x && item.y === food.y
+        );
+
+        if (!terkenaUlar && !terkenaMakanan) {
+            foods.push(food);
+        }
+    }
+}
+
+function tambahMakanan() {
+    while (foods.length < jumlahMakanan) {
+        const food = {
+            x: Math.floor(Math.random() * 20) * grid,
+            y: Math.floor(Math.random() * 20) * grid
+        };
+
+        const terkenaUlar = snake.some(segment =>
+            segment.x === food.x && segment.y === food.y
+        );
+
+        const terkenaMakanan = foods.some(item =>
+            item.x === food.x && item.y === food.y
+        );
+
+        if (!terkenaUlar && !terkenaMakanan) {
+            foods.push(food);
+        }
+    }
 }
 
 function update() {
@@ -90,7 +128,11 @@ function update() {
 
     snake.unshift(head);
 
-    if (head.x === food.x && head.y === food.y) {
+    const indexMakanan = foods.findIndex(food =>
+        head.x === food.x && head.y === food.y
+    );
+
+    if (indexMakanan !== -1) {
         score++;
 
         document.getElementById("score").textContent = score;
@@ -101,7 +143,8 @@ function update() {
             document.getElementById("highScore").textContent = highScore;
         }
 
-        createFood();
+        foods.splice(indexMakanan, 1);
+        tambahMakanan();
 
         clearInterval(gameLoop);
 
@@ -119,7 +162,7 @@ function draw() {
     ctx.fillRect(0, 0, size, size);
 
     drawGrid();
-    drawFood();
+    drawFoods();
     drawSnake();
 }
 
@@ -141,18 +184,20 @@ function drawGrid() {
     }
 }
 
-function drawFood() {
-    ctx.fillStyle = "#e0525d";
+function drawFoods() {
+    foods.forEach(food => {
+        ctx.fillStyle = "#e0525d";
 
-    ctx.beginPath();
-    ctx.arc(
-        food.x + 10,
-        food.y + 10,
-        8,
-        0,
-        Math.PI * 2
-    );
-    ctx.fill();
+        ctx.beginPath();
+        ctx.arc(
+            food.x + 10,
+            food.y + 10,
+            8,
+            0,
+            Math.PI * 2
+        );
+        ctx.fill();
+    });
 }
 
 function drawSnake() {
@@ -226,6 +271,11 @@ function gameOver() {
 
 document.addEventListener("keydown", function(event) {
     const key = event.key.toLowerCase();
+
+    if (key === "r" && !gameRunning) {
+        startGame();
+        return;
+    }
 
     if (key === "arrowup" || key === "w") {
         changeDirection("up");
