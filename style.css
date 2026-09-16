@@ -4,90 +4,75 @@
 
 body {
     margin: 0;
+
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #231e2d;
+    background: #17141f;
     color: white;
     font-family: Arial, sans-serif;
 }
 
 .game {
-    width: 100%;
-    max-width: 430px;
-    padding: 15px;
     text-align: center;
 }
 
 h1 {
-    color: #ffb4c8;
-    margin: 5px 0 15px;
+    margin: 10px 0;
 }
 
 .info {
+    width: 400px;
     display: flex;
     justify-content: space-between;
-    background: #302a3d;
-    padding: 12px 18px;
-    border-radius: 12px;
-    margin-bottom: 12px;
-}
-
-.info b {
-    color: #ffb4c8;
+    margin: 10px auto;
+    font-size: 16px;
 }
 
 .board {
+    width: 400px;
+    height: 400px;
     position: relative;
-    width: 100%;
+    margin: auto;
 }
 
 canvas {
-    width: 100%;
-    height: auto;
+    width: 400px;
+    height: 400px;
     display: block;
     background: #231e2d;
-    border: 3px solid #50465d;
-    border-radius: 12px;
-}
-
-button {
-    border: none;
-    border-radius: 12px;
-    background: #302a3d;
-    color: white;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-button:active {
-    background: #d9829a;
-    transform: scale(0.92);
+    border: 3px solid #555;
 }
 
 #startScreen,
 #gameOver {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80%;
-    padding: 25px;
-    background: rgba(35, 30, 45, 0.95);
-    border-radius: 15px;
-}
-
-#startScreen button,
-#gameOver button {
-    padding: 12px 25px;
-    background: #d9829a;
-    font-size: 16px;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(25, 20, 35, 0.92);
 }
 
 .hidden {
     display: none !important;
+}
+
+button {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    background: #ff6b9d;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #ff4f89;
 }
 
 .controls {
@@ -96,26 +81,32 @@ button:active {
 
 .controls button {
     width: 55px;
-    height: 55px;
+    height: 45px;
     margin: 3px;
+    padding: 0;
+    font-size: 20px;
 }
 
 .text {
-    font-size: 12px;
+    font-size: 14px;
     color: #aaa;
 }
 
-@media (max-width: 450px) {
-    body {
-        align-items: flex-start;
-        padding-top: 15px;
+@media (max-width: 500px) {
+    .board,
+    canvas,
+    .info {
+        width: 90vw;
     }
 
-    .game {
-        padding: 10px;
+    .board,
+    canvas {
+        height: 90vw;
+        max-width: 400px;
+        max-height: 400px;
     }
 
-    h1 {
-        font-size: 28px;
+    .info {
+        max-width: 400px;
     }
 }
