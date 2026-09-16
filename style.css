@@ -1,0 +1,31 @@
+body {
+    margin: 0;
+    background: rgb(35, 30, 45);
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+h1 {
+    margin: 15px;
+}
+
+.skor {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+canvas {
+    display: block;
+    margin: auto;
+    border: 3px solid rgb(55, 50, 65);
+}
+
+p {
+    font-size: 18px;
+}
+
+#pesan {
+    color: rgb(255, 180, 200);
+    font-weight: bold;
+}
